@@ -17,7 +17,7 @@ api = tweepy.API(auth)
 class MyListener(StreamListener):
     def on_data(self, data):
         try:
-            with open('americas_tweets.json', 'a') as f:
+            with open('data/americas_tweets_jan03.json', 'a') as f:
                 f.write(data)
                 return True
         except BaseException as e:
