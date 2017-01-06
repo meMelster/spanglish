@@ -17,7 +17,7 @@ api = tweepy.API(auth)
 class MyListener(StreamListener):
     def on_data(self, data):
         try:
-            with open('data/americas_tweets_jan03.json', 'a') as f:
+            with open('data/americas_tweets_jan05.2.json', 'a') as f:
                 f.write(data)
                 return True
         except BaseException as e:
@@ -28,5 +28,5 @@ class MyListener(StreamListener):
             return True
 
 twitter_stream = Stream(auth, MyListener())
-twitter_stream.filter(locations=[-173, -56.9, -29.7, 71.1])
+twitter_stream.filter(locations=[-127.53, 14.77, -58.01, 50.96])
 

@@ -11,7 +11,8 @@ import string
 
 
 #spanglishRegex = r'(#|@)*(S|s)panglish*'
-spanglish_tweets_file = open('/home/ubuntu/data/spanglish_tweets.txt', 'w')
+spanglish_tweets_file = open('/home/ubuntu/data/hashtag_spanglish_tweets.txt', 'w')
+exclusion_list_en_es = open('/home/ubuntu/data/exclusion_list.txt', 'w+')
 
 english_dictionary = enchant.Dict("en_US")
 spanish_dictionary = enchant.Dict("es")
@@ -34,6 +35,9 @@ spanish_word = False
 
 spanglish_tweets = []
 
+tweet_count = 0
+spanglish_tweet_count = 0
+
 punctuation = list(string.punctuation)
 
 emoji_re = re.compile(u'['
@@ -43,7 +47,7 @@ emoji_re = re.compile(u'['
 	u'\u2600-\u26FF\u2700-\u27BF]+'
 	, re.UNICODE)
 	
-hashtag_re = re.compile(r"(#+[\w_]+[\w\'_\-]*[\w_]+)")
+hashtag_re = re.compile(r"((@|#)+[\w_]+[\w\'_\-]*[\w_]+)")
 
 
 emoticons_str = r"""
@@ -93,23 +97,15 @@ line_generator = open(sys.argv[1])
 
 for line in line_generator:
 	line_object = json.loads(line)
+	tweet_count += 1
 
 	if "text" in line_object:
 		tweet = line_object["text"]
 		tweet_words = preprocess(tweet)
-		spanglish_tweets_file.write(tweet+ '\n')
-		# if re.search(r'spanglishRegex', tweet) != None:
-		#     spanglish_tweets_file.write(*fields, sep='\t')
-		#     spanglish_tweets_file.write('\n')
-
-		# #we should check for Spanglish words as well
 
 		#determine if the tweet is Spanglish
 		for word in tweet_words:
-			#spanglish_tweets_file.write("WORD " + word + "\n")
-			#spanglish_tweets_file.write(str(re.findall(r"#(\w+)", word)) + "\n")
 			hashtag = hashtag_re.search(word)
-			#spanglish_tweets_file.write("HASHTAG " + str(hashtag) + "\n")
 			if hashtag:
 				temp = word[1:]
 				#spanglish_tweets_file.write("WORD " + word + "\n")
@@ -123,12 +119,12 @@ for line in line_generator:
 					tweet_words.append(temp[0])	
 				tweet_words.remove(word)
 				#spanglish_tweets_file.write("New Tweet Words  " + str(tweet_words) + '\n')	
-			#not a number or an emoji
 			if word.lower() in spanglish_dictionary:
 				#spanglish_tweets_file.write("Spanglish Word!  " + word + '\n')
 				english_word = True
 				spanish_word = True
 				break
+			#not a number or an emoji
 			if not (bool(re.search(r'\d', word)) or emoji_re.search(word) or len(word)<2 or word=="\n" or word.endswith("...")):
 				if word not in punctuation:
 					if not (english_dictionary.check(word) and spanish_dictionary.check(word)):
@@ -138,22 +134,22 @@ for line in line_generator:
 						if spanish_dictionary.check(word):
 							spanish_word = True
 							#spanglish_tweets_file.write("Spanish Word!  " + word + '\n')
+					else:
+						exclusion_list_en_es.write(word + '\n')
 		if english_word and spanish_word:
 			#print("Spanglish Tweet!  " + tweet)
 			spanglish_tweets_file.write(tweet + '\n')
+			spanglish_tweet_count += 1
 		english_word = False
 		spanish_word = False
 
+
+spanglish_tweets_file.write('\n')
+spanglish_tweets_file.write('\n')
+spanglish_tweets_file.write('\n')
+spanglish_tweets_file.write('Total Original Tweets Streamed: ' + str(tweet_count) + '\n')
+spanglish_tweets_file.write('Total Spanglish Tweets : ' + str(spanglish_tweet_count) + '\n')
+spanglish_tweets_file.write('Percentage of Streamed Tweets determined to be Spanglish : ' + str((spanglish_tweet_count/tweet_count)*100) + '\n')
 spanglish_tweets_file.close()
-
-
-
-#TF-IDF feature extraction with scikit-learn
-# vectorizer = TfidfVectorizer(min_df=2,
-#                              max_df = 0.8,
-#                              sublinear_tf=True,
-#                              use_idf=True)
-
-# train_vectors = vectorizer.fit_transform(train_data)
-# test_vectors = vectorizer.transform(train_data)
+exclusion_list_en_es.close()
 
