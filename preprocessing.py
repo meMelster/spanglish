@@ -1,16 +1,11 @@
 import sys
 import re
 import string
-from labeled_tweets import labeled_tweets_csv_to_list
 
 from nltk.corpus import stopwords
 
 #English and Spanish stemmer available
 from nltk.stem import SnowballStemmer
-
-
-
-#This file to be passed spanglish_tweets.txt
 
 punctuation = list(string.punctuation)
 
@@ -38,6 +33,12 @@ def make_stop_words_list():
 	#use nltk stopwords list
 	stop_words_list.append(stopwords.words('english'))
 	stop_words_list.append(stopwords.words('spanish'))
+	
+	
+make_stop_words_list()
+flat_stop_words_list = [item for sublist in stop_words_list for item in sublist]
+#print(flat_stop_words_list)
+
 
 hashtag_re = re.compile(r"((@|#)+[\w_]+[\w\'_\-]*[\w_]+)")
 
@@ -79,19 +80,9 @@ def preprocess(s, lowercase=False):
 	if lowercase:
 		tokens = [token if emoticon_re.search(token) else token.lower() for token in tokens]
 	return tokens
-
-
-make_stop_words_list()
-flat_stop_words_list = [item for sublist in stop_words_list for item in sublist]
-print(flat_stop_words_list)
-
-with open(sys.argv[1]) as f:
-	for tweet in f:
-		#cleansed_spanglish_tweets_file.write(tweet + '\n')
-		#parse tweets
-		tweet_words = preprocess(tweet)
-		#cleansed_spanglish_tweets_file.write(str(tweet_words) + '\n')
-		for word in tweet_words:
+	
+def cleanse_tweet_words(tweet_words):
+	for word in tweet_words:
 			hashtag = hashtag_re.search(word)
 			if hashtag:
 				temp = word[1:]
@@ -107,14 +98,23 @@ with open(sys.argv[1]) as f:
 				tweet_words.remove(word)
 			else:
 				if word not in flat_stop_words_list:
-					print(word)
 					cleansed_tweet.append(word)
 					#cleansed_spanglish_tweets_file.write(str(cleansed_tweet) + '\n')
-		cleansed_spanglish_tweets_file.write(str(cleansed_tweet) + '\n')
-		cleansed_tweet[:] = []
+	return list(cleansed_tweet)
 
-	
-				
-cleansed_spanglish_tweets_file.close()
+
+
+#with open(sys.argv[1]) as f:
+	#for tweet in f:
+		#cleansed_spanglish_tweets_file.write(tweet + '\n')
+		#parse tweets
+		#tweet_words = preprocess(tweet)
+		#cleansed_spanglish_tweets_file.write(str(tweet_words) + '\n')
+		#cleansed_tweet = cleanse_tweet_words(tweet_words)
+		#cleansed_spanglish_tweets_file.write(str(cleansed_tweet) + '\n')
+		#cleansed_tweet[:] = []
+		
+#cleansed_spanglish_tweets_file.close()
+
 				
 
