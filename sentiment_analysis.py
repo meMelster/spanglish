@@ -1,3 +1,5 @@
+import nltk
+
 def get_words_in_tweets(tweets):
     all_words = []
     for (words, sentiment) in tweets:
