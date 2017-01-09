@@ -6,12 +6,13 @@ import json
 
 import enchant
 from nltk.corpus import stopwords
+import nltk 
 
 import string
 
 
 #spanglishRegex = r'(#|@)*(S|s)panglish*'
-spanglish_tweets_file = open('/home/ubuntu/data/hashtag_spanglish_tweets.txt', 'w')
+spanglish_tweets_file = open('/home/ubuntu/data/us_mx_spanglish_tweets_jan06.2.txt', 'w')
 exclusion_list_en_es = open('/home/ubuntu/data/exclusion_list.txt', 'w+')
 
 english_dictionary = enchant.Dict("en_US")
@@ -88,20 +89,36 @@ def clean_english_dictionary():
 	english_dictionary.remove("Eu")
 	english_dictionary.remove("um")
 	english_dictionary.remove("to")
+	
+def extract_entity_names(t):
+	entity_names = []
+	
+	if hasattr(t, 'node') and t.node:
+		if t.node == 'NE':
+			entity_names.append(' '.join([child[0] for child in t]))
+		else:
+			for child in t:
+				entity_names.extend(extract_entity_names(child))
+	return entity_names
 
 
 clean_english_dictionary()
+
 
 #json file of tweets passed as parameter
 line_generator = open(sys.argv[1])
 
 for line in line_generator:
 	line_object = json.loads(line)
+	if spanglish_tweet_count == 12000:
+		break
 	tweet_count += 1
 
 	if "text" in line_object:
 		tweet = line_object["text"]
 		tweet_words = preprocess(tweet)
+		#spanglish_tweets_file.write(tweet + "\n")
+		
 
 		#determine if the tweet is Spanglish
 		for word in tweet_words:
@@ -118,7 +135,8 @@ for line in line_generator:
 				else:
 					tweet_words.append(temp[0])	
 				tweet_words.remove(word)
-				#spanglish_tweets_file.write("New Tweet Words  " + str(tweet_words) + '\n')	
+				#spanglish_tweets_file.write("New Tweet Words  " + str(tweet_words) + '\n')
+
 			if word.lower() in spanglish_dictionary:
 				#spanglish_tweets_file.write("Spanglish Word!  " + word + '\n')
 				english_word = True
