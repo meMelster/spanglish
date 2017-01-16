@@ -1,4 +1,5 @@
 import nltk
+from pprint import pprint
 from nltk.corpus import sentiwordnet as swn
 from nltk.internals import find_jars_within_path
 #English and Spanish POS-tagger available
@@ -29,8 +30,10 @@ def get_word_features(tweets):
 		pos = tagger.tag(words)
 		tagged_tweets.append((pos, sentiment))
 	
-	
+	result = []
 	for (words, sentiment) in tagged_tweets:
+		scored_words = []
+		tweet_score = 0
 		for word, tag in words:
 			newtag=''
 			if tag.startswith('NN'):
@@ -50,23 +53,24 @@ def get_word_features(tweets):
 				if(len(synsets)>0):
 					for syn in synsets:
 						score+=syn.pos_score()-syn.neg_score()
-						scored_tweets.append(((word, score/len(synsets)), sentiment))
+					scored_words.append((word, score/len(synsets)))
+					tweet_score = (score/len(synsets)) + tweet_score
 				else:
-					scored_tweets.append(((word, 0), sentiment))
-	#print(str(scored_tweets) + "Shows us SentiScore per tweet")
+					scored_words.append((word, 0))
+		#print(scored_words)
+		#print(tweet_score)
+		if len(scored_words)>0:
+			scored_tweets.append((((scored_words, tweet_score)), sentiment))
 	return scored_tweets
 	
 	
 def extract_features(tweet):
 	features = {}
-	#print(str(tweet))
-	for (words_score, sentiment) in tweet:
-		features['sentiment'] = sentiment
-		for word_tag_list, score in words_score:
-			features['sentiscore'] = score
-			for word, tag in word_tag_list:
-				features['word_count'] = len(word_tag_list)
-	print(features)
+	print("Tweet: " + str(tweet))
+	print("\n")
+	#features['sentiment'] = sentiment
+	features['tweet_score'] = tweet[1]
+	features['word_count'] = len(tweet[0])
 	return features
  
 def build_features(tweets):
@@ -74,4 +78,7 @@ def build_features(tweets):
 	return scored_tweets
 	 
 def build_training_set(tweets):
-	return nltk.classify.apply_features(extract_features, tweets)
+	featuresets = [(extract_features(tweet), sentiment) for (tweet, sentiment) in tweets]
+	train_set = []
+	train_set = featuresets
+	return train_set
