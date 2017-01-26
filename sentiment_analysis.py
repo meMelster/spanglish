@@ -27,11 +27,15 @@ def get_word_features(tweets):
 	tagged_tweets = []
 	scored_tweets = []
 	for (words, sentiment) in tweets:
+		#print(words, sentiment)
 		pos = tagger.tag(words)
+		#print(pos)
 		tagged_tweets.append((pos, sentiment))
 	
+	print(tagged_tweets)
 	result = []
 	for (words, sentiment) in tagged_tweets:
+		#print(words)
 		scored_words = []
 		tweet_score = 0
 		for word, tag in words:
@@ -66,9 +70,6 @@ def get_word_features(tweets):
 	
 def extract_features(tweet):
 	features = {}
-	print("Tweet: " + str(tweet))
-	print("\n")
-	#features['sentiment'] = sentiment
 	features['tweet_score'] = tweet[1]
 	features['word_count'] = len(tweet[0])
 	return features
@@ -77,8 +78,6 @@ def build_features(tweets):
 	scored_tweets = get_word_features(tweets)
 	return scored_tweets
 	 
-def build_training_set(tweets):
+def build_feature_set(tweets):
 	featuresets = [(extract_features(tweet), sentiment) for (tweet, sentiment) in tweets]
-	train_set = []
-	train_set = featuresets
-	return train_set
+	return featuresets
