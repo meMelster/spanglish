@@ -13,6 +13,8 @@ tagger._stanford_jar = ':'.join(stanford_jars)
 
 wordlist = []
 
+negation = ['no', 'not', 'nil', 'nope', 'nah', 'naw', 'non', 'nan']
+
 def get_words_in_tweets(tweets):
 	all_words = []
 	for (words, sentiment) in tweets:
@@ -29,16 +31,19 @@ def get_word_features(tweets):
 	for (words, sentiment) in tweets:
 		#print(words, sentiment)
 		pos = tagger.tag(words)
-		#print(pos)
+		print(pos)
 		tagged_tweets.append((pos, sentiment))
 	
-	print(tagged_tweets)
+	#print(tagged_tweets)
 	result = []
 	for (words, sentiment) in tagged_tweets:
 		#print(words)
 		scored_words = []
 		tweet_score = 0
+		contains_negation = False
 		for word, tag in words:
+			if word in negation:
+				contains_negation = True
 			newtag=''
 			if tag.startswith('NN'):
 				newtag='n'
@@ -64,7 +69,7 @@ def get_word_features(tweets):
 		#print(scored_words)
 		#print(tweet_score)
 		if len(scored_words)>0:
-			scored_tweets.append((((scored_words, tweet_score)), sentiment))
+			scored_tweets.append((((scored_words, tweet_score, contains_negation)), sentiment))
 	return scored_tweets
 	
 	
@@ -72,6 +77,7 @@ def extract_features(tweet):
 	features = {}
 	features['tweet_score'] = tweet[1]
 	features['word_count'] = len(tweet[0])
+	features['contains_negation'] = tweet[2]
 	return features
  
 def build_features(tweets):
