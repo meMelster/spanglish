@@ -6,16 +6,12 @@
 
 import sys
 import re
-import string
 from nltk.corpus import stopwords
 
 #English and Spanish stemmer available
 from nltk.stem import snowball
 
 stemmer = snowball.EnglishStemmer(ignore_stopwords=False)
-
-
-punctuation = list(string.punctuation)
 
 stop_words_list = []
 flat_stop_words_list = []
@@ -32,7 +28,6 @@ def make_stop_words_list():
 		for word in f:
 			stop_words_list.append(word)
 	
-	stop_words_list.append(punctuation)
 	stop_words_list.append('...')
 
 	#use nltk stopwords list
@@ -82,7 +77,7 @@ def tokenize(s):
 def preprocess(s, lowercase=False):
 	tokens = tokenize(s)
 	if lowercase:
-		tokens = [token if emoticon_re.search(token) else token.lower() for token in tokens]
+		tokens = [token if emoticon_re.search(token) else token for token in tokens]
 	return tokens
 	
 def cleanse_tweet_words(tweet_words):
