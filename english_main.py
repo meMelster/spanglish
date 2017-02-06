@@ -1,14 +1,14 @@
 from labeled_tweets import labeled_tweets_tsv_to_list
-from english_preprocessing import preprocess
-from english_preprocessing import cleanse_tweet_words
 from sentiment_analysis import build_features
 from sentiment_analysis import build_feature_set
+import english_preprocessing as preprocess
 from pprint import pprint
 import nltk
+import regex
 
 
 raw_labeled_tweets, pos, neg = labeled_tweets_tsv_to_list('/home/ubuntu/spanglish/data/labeled_tweets.tsv')
-used_raw_tweets = raw_labeled_tweets[:10]
+used_raw_tweets = raw_labeled_tweets[:500]
 
 print('Counts')
 print('Positive: ' + str(pos) + '  Negative: ' + str(neg))
@@ -21,25 +21,27 @@ tweets = []
 print("CASE 1: ENGLISH")
 for (tweet, sentiment) in used_raw_tweets:
 	#print(tweet)
-	tweet_words = preprocess(tweet)
-	words_filtered = cleanse_tweet_words(tweet_words)
-	tweets.append((words_filtered, sentiment))
+	tweet_words = regex.tokenize(tweet)
+	cleansed_words = preprocess.cleanse(tweet_words)
+	tweets.append((cleansed_words, sentiment))
 
-#print()
-#pprint(tweets)
+print()
+pprint(tweets)
 #list of word features to be extracted from the tweets
 scored_tweets = build_features(tweets)
-#print()
+print()
 pprint(scored_tweets)
 
 
 #create training set
-training_set = build_feature_set(scored_tweets[:5])
-test_set = build_feature_set(scored_tweets[6:10])
-#print("Training Set")
-#pprint(training_set)
-#print("Test Set")
-#pprint(test_set)
+training_set = build_feature_set(scored_tweets[:250])
+test_set = build_feature_set(scored_tweets[251:500])
+print()
+print("Training Set")
+pprint(training_set)
+print()
+print("Test Set")
+pprint(test_set)
 
 #train our classifier
 classifier = nltk.NaiveBayesClassifier.train(training_set)
