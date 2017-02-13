@@ -36,7 +36,7 @@ def make_stop_words_list():
 
 	#use nltk stopwords list
 	stop_words_list.append(stopwords.words('english'))
-	
+	 
 
 make_stop_words_list()
 flat_stop_words_list = [item for sublist in stop_words_list for item in sublist]

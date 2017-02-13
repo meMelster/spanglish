@@ -14,7 +14,7 @@ stanford_dir = tagger._stanford_jar[0].rpartition('/')[0]
 stanford_jars = find_jars_within_path(stanford_dir)
 tagger._stanford_jar = ':'.join(stanford_jars)
 
-has_hashtag_or_mention = [False] * 10
+has_hashtag_or_mention = [False] * 900
 
 wordlist = []
 
@@ -123,9 +123,6 @@ def get_word_features(tweets):
 	
 	
 def extract_features(tweet):
-	# FEATURES TO ADD: has word with all capital letters, has special character !@#$%^&*?
-	#print(tweet)
-	#print(tweet[0])
 	features = {}
 	features['tweet_score'] = tweet[1]
 	features['word_count'] = len(tweet[0])
@@ -143,8 +140,6 @@ def extract_features(tweet):
 	features['has_positive_emoji'] = tweet[13]
 	features['has_negative_emoji'] = tweet[14]
 	
-	#print("FEATURES")
-	#print(features)
 	return features
  
 def build_features(tweets):
