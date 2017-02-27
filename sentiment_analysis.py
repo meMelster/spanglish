@@ -14,7 +14,7 @@ stanford_dir = tagger._stanford_jar[0].rpartition('/')[0]
 stanford_jars = find_jars_within_path(stanford_dir)
 tagger._stanford_jar = ':'.join(stanford_jars)
 
-has_hashtag_or_mention = [False] * 900
+has_hashtag_or_mention = [False] * 800
 
 wordlist = []
 
@@ -149,7 +149,7 @@ def build_features(tweets):
 def build_feature_set(tweets):
 	#print()
 	#print(tweets)
-	featuresets = [(extract_features(tweet), sentiment) for (tweet, sentiment) in tweets]
+	featuresets = [(dict(extract_features(tweet)), sentiment) for (tweet, sentiment) in tweets]
 	return featuresets
 	
 def cleanse_mention_and_hashtag_words(tweet_words, hash_hashtag_or_mention, count):
