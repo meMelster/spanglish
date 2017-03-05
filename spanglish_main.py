@@ -90,11 +90,11 @@ print()
 
 
 #train our classifier
-classifier = nltk.NaiveBayesClassifier.train(training_set)
+#classifier = nltk.NaiveBayesClassifier.train(training_set)
 
-#classifier_f = open("english_naivebayes.pickle", "rb")
-#classifier = pickle.load(classifier_f)
-#classifier.close()
+classifier_f = open("spanglish_naivebayes.pickle", "rb")
+classifier = pickle.load(classifier_f)
+classifier_f.close()
 
 print(classifier.show_most_informative_features(32))
 print('Accuracy')
@@ -162,8 +162,8 @@ print(cm.pretty_format(sort_by_count=True, show_percents=True, truncate=9))
 
 
 #Save classifier bc this shit takes forever yo
-save_classifier = open("spanglish_naivebayes.pickle", "wb")
-pickle.dump(classifier, save_classifier)
-save_classifier.close()
+#save_classifier = open("spanglish_naivebayes.pickle", "wb")
+#pickle.dump(classifier, save_classifier)
+#save_classifier.close()
 
 
