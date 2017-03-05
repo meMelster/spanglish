@@ -13,7 +13,7 @@ from nltk.stem import snowball
 #English because we translate first
 stemmer = snowball.EnglishStemmer(ignore_stopwords=False)
 
-translator = Translator('68c70051d34f44259673c6eb1b59f6ef')
+translator = Translator('')
 
 stop_words_list = []
 flat_stop_words_list = []
