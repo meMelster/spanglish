@@ -7,14 +7,15 @@ from nltk.tag import StanfordPOSTagger
 import string
 import regex
 import re
+from spanish_preprocessing import has_hashtag_or_mention
 
-tagger = StanfordPOSTagger('/home/ubuntu/spanglish/tools/english-bidirectional-distsim.tagger', '/home/ubuntu/spanglish/tools/stanford-postagger.jar')
+#tagger = StanfordPOSTagger('/home/ubuntu/spanglish/tools/english-bidirectional-distsim.tagger', '/home/ubuntu/spanglish/tools/stanford-postagger.jar')
 
-stanford_dir = tagger._stanford_jar[0].rpartition('/')[0]
-stanford_jars = find_jars_within_path(stanford_dir)
-tagger._stanford_jar = ':'.join(stanford_jars)
+#stanford_dir = tagger._stanford_jar[0].rpartition('/')[0]
+#stanford_jars = find_jars_within_path(stanford_dir)
+#tagger._stanford_jar = ':'.join(stanford_jars)
 
-has_hashtag_or_mention = [False] * 800
+#has_hashtag_or_mention = [False] * 800
 
 wordlist = []
 
@@ -29,18 +30,21 @@ def get_words_in_tweets(tweets):
 	return all_words
 
 def get_word_features(tweets):
+	print(has_hashtag_or_mention)
 	word_features = []
+	print(tweets)
 	wordlist = get_words_in_tweets(tweets)
-	wordlist = nltk.FreqDist(wordlist[0])
+	print('WORD LIST')
+	wordlist = nltk.FreqDist(wordlist)
+	pprint(wordlist)
+	print()
 	
 	tagged_tweets = []
 	scored_tweets = []
 	count = 0
 	for (words, sentiment) in tweets:
-		cleansed_words = cleanse_mention_and_hashtag_words(words, has_hashtag_or_mention, count)
-		print(cleansed_words, sentiment)
 		try:
-			pos = tagger.tag(cleansed_words)
+			pos = nltk.pos_tag(words)
 			print(pos)
 			print()
 			tagged_tweets.append((pos, sentiment))
@@ -48,8 +52,8 @@ def get_word_features(tweets):
 			print("Error getting POS for " + str(words))
 			print("Moving on to next tweet")
 		count = count + 1
-	
-	#print(tagged_tweets)
+	print('LENGTH')
+	print(len(tagged_tweets))
 	result = []
 	count = 0
 	for (words, sentiment) in tagged_tweets:
@@ -69,8 +73,10 @@ def get_word_features(tweets):
 		emoji_count = 0
 		pos_emoji = False
 		neg_emoji = False
-		
+		pos_wods = []
+		print('WORDS')
 		for word, tag in words:
+			print(words)
 			if regex.emoji_re.search(word):
 				emoji_count = emoji_count + 1
 			if regex.positive_emoticon_re.search(word):
@@ -88,57 +94,81 @@ def get_word_features(tweets):
 			else:
 				newtag=''
 				if tag.startswith('NN'):
-					newtag='n'
+					newtag = 'n'
 					noun_count = noun_count + 1
 				elif tag.startswith('JJ'):
-					newtag='a'
+					newtag = 'a'
 					adjective_count = adjective_count + 1
 				elif tag.startswith('V'):
-					newtag='v'
+					newtag = 'v'
 					verb_count = verb_count + 1
 				elif tag.startswith('R'):
-					newtag='r'
+					newtag = 'r'
 					adverb_count = adverb_count + 1
 				else:
 					newtag=''
 				if(newtag!=''):
 					synsets = list(swn.senti_synsets(word, newtag))
+					print(synsets)
 					#Getting average of all possible sentiments
 					score=0
 					if(len(synsets)>0):
 						for syn in synsets:
+							print(syn)
+							print(syn.pos_score())
+							print(syn.neg_score())
 							score+=syn.pos_score()-syn.neg_score()
 						scored_words.append((word, score/len(synsets)))
 						tweet_score = (score/len(synsets)) + tweet_score
 					else:
 						scored_words.append((word, 0))
+				else:
+					scored_words.append((word, 0))
 		#print(scored_words)
-		#print(tweet_score)
+		print(tweet_score)
 		#if len(scored_words)>0:
-		t = (((scored_words, tweet_score, contains_negation, contains_all_caps_word, all_caps_word_count, contains_special_characters, special_character_count, noun_count, adjective_count, verb_count, adverb_count, emoji_count, has_hashtag_or_mention[count], pos_emoji, neg_emoji)), sentiment)
+		if len(words) > 0:
+			t = (((scored_words, tweet_score/len(words), contains_negation, contains_all_caps_word, all_caps_word_count/len(words), contains_special_characters, special_character_count/len(words), noun_count/len(words), adjective_count/len(words), verb_count/len(words), adverb_count/len(words), emoji_count/len(words), has_hashtag_or_mention[count], pos_emoji, neg_emoji)), sentiment)
+			scored_tweets.append(t)
+		else:
+			print('EMPTY')
+			print(words)
+			t = (((scored_words, tweet_score, contains_negation, contains_all_caps_word, all_caps_word_count, contains_special_characters, special_character_count, noun_count, adjective_count, verb_count, adverb_count, emoji_count, has_hashtag_or_mention[count], pos_emoji, neg_emoji)), sentiment)
+			scored_tweets.append(t)
 		#print(t)
-		scored_tweets.append(t)
+		
 		count = count + 1
 	return scored_tweets
 	
 	
 def extract_features(tweet):
 	features = {}
-	features['tweet_score'] = tweet[1]
-	features['word_count'] = len(tweet[0])
-	features['contains_negation'] = tweet[2]
-	features['contains_all_caps_word'] = tweet[3]
-	features['all_caps_word_count'] = tweet[4]
-	features['contains_special_characters'] = tweet[5]
-	features['special_character_count'] = tweet[6]
-	features['noun_count'] = tweet[7]
-	features['adjective_count'] = tweet[8]
-	features['verb_count'] = tweet[9]
-	features['adverb_count'] = tweet[10]
-	features['emoji_count'] = tweet[11]
+
+	if(tweet[1] > 0):
+		features['has_positive_tweet_score'] = True
+		features['has_negative_tweet_score'] = False
+	elif(tweet[1] < 0):
+		features['has_negative_tweet_score'] = True
+		features['has_positive_tweet_score'] = False
+	else:
+		features['has_positive_tweet_score'] = False
+		features['has_negative_tweet_score'] = False
+	
+	if(len(tweet[0]) > 6):
+		features['word_count_greater_than_six'] = True
+	else:
+		features['word_count_greater_than_six'] = False
+		
+	if(tweet[8] > 0):
+		features['has_adjective'] = True
+	else:
+		features['has_adjective'] = False
+
+		
 	features['hash_hashtag_or_mention'] = tweet[12]
 	features['has_positive_emoji'] = tweet[13]
 	features['has_negative_emoji'] = tweet[14]
+
 	
 	return features
  

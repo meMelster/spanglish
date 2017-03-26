@@ -7,15 +7,24 @@ import collections
 import nltk
 import regex
 import pickle
-from nltk import precision
-from nltk import recall
-from nltk import f_measure
 
-raw_labeled_tweets, pos, neg = labeled_tweets_tsv_to_list('/home/ubuntu/spanglish/data/labeled_tweets.tsv')
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import roc_curve
+from sklearn.metrics import auc
+from sklearn.metrics import f1_score
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import matthews_corrcoef
+
+#raw_labeled_tweets, pos, neg = labeled_tweets_tsv_to_list('/home/ubuntu/spanglish/data/labeled_tweets.tsv')
+
+raw_labeled_tweets_f = open("raw_labeled_tweets_800.pickle", "rb")
+raw_labeled_tweets = pickle.load(raw_labeled_tweets_f)
+raw_labeled_tweets_f.close()
+
 used_raw_tweets = raw_labeled_tweets[:800]
 
-print('Counts')
-print('Positive: ' + str(pos) + '  Negative: ' + str(neg))
+#print('Counts')
+#print('Positive: ' + str(pos) + '  Negative: ' + str(neg))
 #pprint(used_raw_tweets)
 #print()
 
@@ -36,33 +45,77 @@ tokenized_neg_tweets = []
 #Case 2: Spanish Lexical Experiment
 #positive
 print("CASE 2: SPANISH")
-for (tweet, sentiment) in pos_tweets:
+count = 0
+#for (tweet, sentiment) in pos_tweets:
 	#print(tweet)
-	tweet_words = regex.tokenize(tweet)
-	cleansed_words = preprocess.sp_cleanse(tweet_words)
-	tokenized_pos_tweets.append((cleansed_words, sentiment))
-scored_pos_tweets = build_features(tokenized_pos_tweets)
+#	tweet_words = regex.tokenize(tweet)
+#	cleansed_words = preprocess.sp_cleanse(tweet_words, count)
+#	tokenized_pos_tweets.append((cleansed_words, sentiment))
+#	count = count + 1
+#scored_pos_tweets = build_features(tokenized_pos_tweets)
 print()
 #pprint(scored_pos_tweets)
-	
+
+#Save scored_neg_tweets bc this shit takes forever yo
+#save_scored_pos_tweets = open("scored_pos_tweets_spanish_800_new tagger.pickle", "wb")
+#pickle.dump(scored_pos_tweets, save_scored_pos_tweets)
+#save_scored_pos_tweets.close()
+#save_scored_pos_tweets = open("scored_pos_tweets_spanish_800_new process.pickle", "wb")
+#pickle.dump(scored_pos_tweets, save_scored_pos_tweets)
+#save_scored_pos_tweets.close()
+
+#scored_pos_tweets_f = open("scored_pos_tweets_spanish_800.pickle", "rb")
+#scored_pos_tweets = pickle.load(scored_pos_tweets_f)
+#scored_pos_tweets_f.close()
+#scored_pos_tweets_f = open("scored_pos_tweets_spanish_800_new tagger.pickle", "rb")
+#scored_pos_tweets = pickle.load(scored_pos_tweets_f)
+#scored_pos_tweets_f.close()
+scored_pos_tweets_f = open("scored_pos_tweets_spanish_800_new process.pickle", "rb")
+scored_pos_tweets = pickle.load(scored_pos_tweets_f)
+scored_pos_tweets_f.close()
 
 print()
 #negative
-for (tweet, sentiment) in neg_tweets:
+count = 0
+#for (tweet, sentiment) in neg_tweets:
 	#print(tweet)
-	tweet_words = regex.tokenize(tweet)
-	cleansed_words = preprocess.sp_cleanse(tweet_words)
-	tokenized_neg_tweets.append((cleansed_words, sentiment))
+#	tweet_words = regex.tokenize(tweet)
+#	cleansed_words = preprocess.sp_cleanse(tweet_words, count)
+#	tokenized_neg_tweets.append((cleansed_words, sentiment))
+#	count = count + 1
 #list of word features to be extracted from the tweets
-scored_neg_tweets = build_features(tokenized_neg_tweets)
+#scored_neg_tweets = build_features(tokenized_neg_tweets)
 print()
 #pprint(scored_neg_tweets)
 
-neg_tweets_cutoff = int(len(scored_neg_tweets)*(3/4))
-pos_tweets_cutoff = int(len(scored_pos_tweets)*(3/4))
+#Save scored_neg_tweets bc this shit takes forever yo
+#save_scored_neg_tweets = open("scored_neg_tweets_spanish_800_new_tagger.pickle", "wb")
+#pickle.dump(scored_neg_tweets, save_scored_neg_tweets)
+#save_scored_neg_tweets.close()
+#save_scored_neg_tweets = open("scored_neg_tweets_spanish_800_new_process.pickle", "wb")
+#pickle.dump(scored_neg_tweets, save_scored_neg_tweets)
+#save_scored_neg_tweets.close()
+
+#scored_neg_tweets_f = open("scored_neg_tweets_spanish_800.pickle", "rb")
+#scored_neg_tweets = pickle.load(scored_neg_tweets_f)
+#scored_neg_tweets_f.close()
+#scored_neg_tweets_f = open("scored_neg_tweets_spanish_800_new_tagger.pickle", "rb")
+#scored_neg_tweets = pickle.load(scored_neg_tweets_f)
+#scored_neg_tweets_f.close()
+scored_neg_tweets_f = open("scored_neg_tweets_spanish_800_new_process.pickle", "rb")
+scored_neg_tweets = pickle.load(scored_neg_tweets_f)
+scored_neg_tweets_f.close()
+
+print('LENGTH')
+print(len(scored_neg_tweets))
+print(len(scored_pos_tweets))
+
+neg_tweets_cutoff = int(len(scored_neg_tweets)*(.70))
+pos_tweets_cutoff = int(len(scored_pos_tweets)*(.70))
 print('cutoffs')
 print(neg_tweets_cutoff)
 print(pos_tweets_cutoff)
+
 
 print('Training')
 print('Positive: ' +  str(pos_tweets_cutoff))
@@ -77,87 +130,109 @@ training_features = scored_neg_tweets[:neg_tweets_cutoff] + scored_pos_tweets[:p
 training_set = build_feature_set(training_features)
 print()
 #pprint(training_set)
+#Save training_set bc this shit takes forever yo
+save_training_set = open("training_set__spanish_800_new _process.pickle", "wb")
+pickle.dump(training_set, save_training_set)
+save_training_set.close()
+
+#training_set_f = open("training_set_spanish_800.pickle", "rb")
+#training_set = pickle.load(training_set_f)
+#training_set_f.close()
 
 #create test set
 test_features = scored_neg_tweets[neg_tweets_cutoff:] + scored_pos_tweets[pos_tweets_cutoff:]
 test_set = build_feature_set(test_features)
 print()
 #pprint(test_set)
+save_test_set = open("test_set_spanish_800_new_process.pickle", "wb")
+pickle.dump(test_set, save_test_set)
+save_test_set.close()
 
+#test_set_f = open("test_set_spanish_800.pickle", "rb")
+#test_set = pickle.load(test_set_f)
+#test_set_f.close()
+
+print('LENGTH')
+print(len(training_set))
+print(len(test_set))
 
 #train our classifier
-#classifier = nltk.NaiveBayesClassifier.train(training_set)
+classifier = nltk.NaiveBayesClassifier.train(training_set)
 
-classifier_f = open("spanish_naivebayes.pickle", "rb")
-classifier = pickle.load(classifier_f)
-classifier_f.close()
+#classifier_f = open("spanish_naivebayes_800.pickle", "rb")
+#classifier = pickle.load(classifier_f)
+#classifier_f.close()
 
 print(classifier.show_most_informative_features(32))
 print('Accuracy')
 print(nltk.classify.accuracy(classifier, test_set))
 
-refsets = collections.defaultdict(set)
-testsets = collections.defaultdict(set)
+
+refsets = []
+testsets = []
+observed = []
+
+def labelToInt(label):
+	if label == 'positive':
+		return 1
+	else:
+		return 0
+
 
 print('tweet features dictionary')
 for i, (tweet_features, sentiment) in enumerate(test_set):
 	#print(tweet_features)
-	refsets[sentiment].add(i)
+	refsets.append(labelToInt(sentiment))
 	observed = classifier.classify(tweet_features)
-	testsets[observed].add(i)
-	
-print()	
-print('Positive')
-print('precision ' + str(precision(refsets['positive'], testsets['positive'])))
-print('recall ' + str(recall(refsets['positive'], testsets['positive'])))
-print('f-score ' + str(f_measure(refsets['positive'], testsets['positive'])))
-print()
-
-print('Negative')
-print('precision ' + str(precision(refsets['negative'], testsets['negative'])))
-print('recall ' + str(recall(refsets['negative'], testsets['negative'])))
-print('f-score ' + str(f_measure(refsets['negative'], testsets['negative'])))
+	testsets.append(labelToInt(observed))
 
 
-f_score = (f_measure(refsets['positive'], testsets['positive']) + f_measure(refsets['negative'], testsets['negative']))/2
-print('Overall F-Score: ')
-print(f_score)
+for i in range(0, len(test_features)):
+	if refsets[i] != testsets[i]:
+		print(i)
+		print(test_features[i])
+		print()
+
+print(refsets)
+print(testsets)
+
+accuracy = accuracy_score(refsets, testsets)
+print('SKLearn Accuracy')
+print(accuracy)
 print()
-recall = (recall(refsets['positive'], testsets['positive']) + recall(refsets['negative'], testsets['negative']))/2
-print('Overall Recall: ')
-print(recall)
+coefficients = matthews_corrcoef(refsets, testsets)
+print(coefficients)
 print()
-precision = (precision(refsets['positive'], testsets['positive']) + precision(refsets['negative'], testsets['negative']))/2
-print('Overall Precision: ')
+
+cm = nltk.ConfusionMatrix(refsets, testsets)
+print(cm.pretty_format(sort_by_count=True, show_percents=False, truncate=9))
+print()
+print(cm.pretty_format(sort_by_count=True, show_percents=True, truncate=9))
+
+precision, recall, _ = precision_recall_curve(refsets, testsets, pos_label=1)
+pr_auc = auc(recall, precision)
+print('Precision')
 print(precision)
+print('Recall')
+print(recall)
+print('PR AUC')
+print(pr_auc)
 
-print()
+fpr, tpr, _ = roc_curve(refsets, testsets, pos_label=1)
+roc_auc = auc(fpr, tpr)
+print('False Positive Rate')
+print(fpr)
+print('True Positive Rate')
+print(tpr)
+print('ROC AUC')
+print(roc_auc)
 
-gold = (['positive'] * len(refsets['positive'])) + (['negative'] * len(refsets['negative']))
-derived = (['positive'] * len(testsets['positive'])) + (['negative'] * len(testsets['negative']))
-print('gold')
-print('Positive: ')
-print(len(refsets['positive']))
-print('Negative: ')
-print(len(refsets['negative']))
-print(gold)
-print()
-print('derived')
-print('Positive: ')
-print(len(testsets['positive']))
-print('Negative: ')
-print(len(testsets['negative']))
-print(derived)
-print()
-
-cm = nltk.ConfusionMatrix(gold, derived)
-print(cm.pretty_format(sort_by_count=True, show_percents=False,truncate=9))
-print()
-print(cm.pretty_format(sort_by_count=True, show_percents=True,truncate=9))
+print('F-Score')
+print(f1_score(refsets, testsets, average='macro'))
 
 #Save classifier bc this shit takes forever yo
-#save_classifier = open("spanish_naivebayes.pickle", "wb")
-#pickle.dump(classifier, save_classifier)
-#save_classifier.close()
+save_classifier = open("spanish_naivebayes_800_new_process.pickle", "wb")
+pickle.dump(classifier, save_classifier)
+save_classifier.close()
 
 
